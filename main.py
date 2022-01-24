@@ -41,5 +41,5 @@ for event in longpoll.listen():
 
     if event.type == VkEventType.MESSAGE_EVENT:
         if event.to_me:
-            if message == 'приветалина':
+            if message == 'привет':
                 send_msg(id, 'Привет, я бот Артема!')
