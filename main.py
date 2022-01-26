@@ -1,17 +1,14 @@
 import vk_api
-import json
-# Достаём из неё longpoll
 from vk_api.longpoll import VkLongPoll, VkEventType
-
 import bot_data
-
-token = bot_data.bot_token
+from pprint import pprint
+import requests
 
 # Подключаем токен и longpoll
-Vk_bot = vk_api.VkApi(token=token)
+Vk_bot = vk_api.VkApi(token=bot_data.bot_token)
 give = Vk_bot.get_api()
-longpoll = VkLongPoll(Vk_bot)
-
+app = vk_api.VkApi(token=bot_data.app_token)
+app.get_api()
 
 # Создадим функцию для ответа на сообщения в лс группы
 def send_msg(id, text):
@@ -19,27 +16,52 @@ def send_msg(id, text):
 
 
 # Слушаем longpoll(Сообщения)
-for event in longpoll.listen():
-    if event.type == VkEventType.MESSAGE_NEW:
-        # Чтобы наш бот не слышал и не отвечал на самого себя
-        if event.to_me:
+def listen():
+    longpoll = VkLongPoll(Vk_bot)
+    for event in longpoll.listen():
+        if event.type == VkEventType.MESSAGE_NEW:
+            if event.to_me:  # Чтобы наш бот не слышал и не отвечал на самого себя
+                message = event.text.lower()  # Для того чтобы бот читал все с маленьких букв
+                user_id = event.user_id  # Получаем id пользователя
 
-            # Для того чтобы бот читал все с маленьких букв
-            message = event.text.lower()
-            # Получаем id пользователя
-            id = event.user_id
+                if message == 'а':
+                    user = (Vk_bot.method('users.get',{'user_ids':user_id,'fields':'city, sex'}))[0]
+                    pair = search_pair(user["city"]["id"], user["sex"])
+                    send_msg(user_id, f'{pair["first_name"]} {pair["last_name"]}\nvk.com/{pair["id"]}')
+                    pprint(pair)
 
 
-            if message == 'привет':
-                send_msg(id, 'Привет, я бот Артема!')
-                print(event)
-            elif message == 'как дела?':
-                send_msg(id, 'Хорошо, а твои как?')
+def search_pair(city=1, sex=1,):
+    pairs = (app.method('users.search', {'city': city, 'sex': sex}))['items']
+    for pair in pairs[:2]:
+        return pair
 
-            else:
-                send_msg(id, 'Я вас не понимаю! :(')
+def _vk_get_photos(user_id):  # метод получающий список фото из VK
+    vk_url = 'https://api.vk.com/method/'
+    vk_token = bot_data.app_token
+    vk_api_version = '5.131'
+    get_photos_url = vk_url + 'photos.get/'
+    params = {
+        'owner_id': user_id,
+        'access_token': vk_token,
+        'v': vk_api_version,
+        'album_id': 'profile',
+        'extended': 1
+    }
+    response = requests.get(get_photos_url, params=params)
+    return response.json()
 
-    if event.type == VkEventType.MESSAGE_EVENT:
-        if event.to_me:
-            if message == 'привет':
-                send_msg(id, 'Привет, я бот Артема!')
+
+def _vk_get_photos(user_id):  # метод получающий список фото из VK
+    params = {
+        'owner_id': user_id,
+        'album_id': 'profile',
+        'extended': 1
+    }
+    response = app.method('users.search', params)
+    return response.json()
+
+
+if __name__ == "__main__":
+    listen()
+    # pprint(search_pair())
