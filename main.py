@@ -26,40 +26,35 @@ def listen():
 
                 if message == 'а':
                     user = (Vk_bot.method('users.get',{'user_ids':user_id,'fields':'city, sex'}))[0]
-                    pair = search_pair(user["city"]["id"], user["sex"])
+                    pair = get_pair(user['city']['id'], user['sex'])
                     send_msg(user_id, f'{pair["first_name"]} {pair["last_name"]}\nvk.com/{pair["id"]}')
                     pprint(pair)
 
 
-def search_pair(city=1, sex=1,):
+def get_pair(city=1, sex=1, age=None):
+    pair = search_user(city, sex)
+    pair_photos = _get_photos(pair['id'])
+    pprint(pair_photos)
+    return pair
+
+def search_user(city=1, sex=1): #Поиск пользователя по параметрам
     pairs = (app.method('users.search', {'city': city, 'sex': sex}))['items']
     for pair in pairs[:2]:
         return pair
 
-def _vk_get_photos(user_id):  # метод получающий список фото из VK
-    vk_url = 'https://api.vk.com/method/'
-    vk_token = bot_data.app_token
-    vk_api_version = '5.131'
-    get_photos_url = vk_url + 'photos.get/'
-    params = {
-        'owner_id': user_id,
-        'access_token': vk_token,
-        'v': vk_api_version,
-        'album_id': 'profile',
-        'extended': 1
-    }
-    response = requests.get(get_photos_url, params=params)
-    return response.json()
 
 
-def _vk_get_photos(user_id):  # метод получающий список фото из VK
+
+def _get_photos(user_id):  # метод получающий список фото из VK
     params = {
         'owner_id': user_id,
-        'album_id': 'profile',
+        'album_id': -6,
         'extended': 1
     }
-    response = app.method('users.search', params)
-    return response.json()
+    photos = (app.method('photos.get', params))['items']
+    for photo in photos:
+        
+    return
 
 
 if __name__ == "__main__":

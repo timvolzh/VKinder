@@ -44,3 +44,18 @@ def send_msg(id, text):
 
 def get_user_info(self):
     info = Vk_bot.method('users.get',{'user_ids': 1111,'fields':'city, nickname'})
+
+def _vk_get_photos(user_id):  # СТАРЫЙ ВАРИАНТ метод получающий список фото из VK
+    vk_url = 'https://api.vk.com/method/'
+    vk_token = bot_data.app_token
+    vk_api_version = '5.131'
+    get_photos_url = vk_url + 'photos.get/'
+    params = {
+        'owner_id': user_id,
+        'access_token': vk_token,
+        'v': vk_api_version,
+        'album_id': 'profile',
+        'extended': 1
+    }
+    response = requests.get(get_photos_url, params=params)
+    return response.json()
