@@ -14,3 +14,8 @@ age = datetime.timedelta
 print(bdate)
 
 
+def get_pair(city=1, sex=1, age=None):  # Ищем пользователя с указанными параметрами и получаем 3 фото
+    pair = search_user(city, sex)
+    pair_photos = _get_photos(pair['id'])
+    pair['photos'] = pair_photos
+    return pair
