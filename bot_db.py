@@ -1,6 +1,4 @@
-import psycopg2
 import sqlalchemy
-from bot_data import db
 
 
 class BotDB:
@@ -39,28 +37,3 @@ class BotDB:
         result = self.connection.execute(
             f"INSERT INTO pairs VALUES ({pair_id + 1}, {vk_user_id}, {vk_pair_id})")
         return pair_id
-
-
-
-
-###########Tests########################
-
-
-# db  = BotDB()
-# res = db.search_user('12783190')
-# print(res)
-
-
-# db  = BotDB()
-# res = db.get_user(139122829)[0]
-# print(res)
-
-
-# db  = BotDB()
-# res = db.get_pairs_list(12783190)
-# print(res)
-
-# db  = BotDB()
-# res = db.add_pair(12783190, 54545555555555)
-# print(res)
-
