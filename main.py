@@ -31,14 +31,10 @@ def listen():
                 if user_exist:
                     pass
                 else:
-                    user = (Vk_bot.method('users.get', {'user_ids': user_id, 'fields': 'city, sex, bdate'}))[0]
-                    user['age'] = (datetime.now() - datetime.strptime(user['bdate'], "%d.%m.%Y")).days // 365
-                    db.add_user(user_id, f"'{user['city']['id']}'", user['sex'], user['age'])
+                    App.db_add_user(user_id)
                 user = db.get_user(user_id)
-
                 pair = get_pair(user_id, user['city'], user['sex'], user['age'])
                 attachment = photo_attachment(pair["id"], pair["photos"])
-                # attachment = f'photo{pair["id"]}_{pair["photos"][0]},photo{pair["id"]}_{pair["photos"][1]},photo{pair["id"]}_{pair["photos"][2]},'
                 send_msg(user_id, f'{pair["first_name"]} {pair["last_name"]}\nvk.com/id{pair["id"]}', attachment)
 
 
