@@ -18,8 +18,9 @@ class App:
         elif sex == 2:
             sex = 1
         users = \
-        (self.vk.method('users.search', {'count': 100, 'city': city, 'sex': sex, 'age_from': age - 1, 'age_to': age + 1}))[
-            'items']
+            (self.vk.method('users.search',
+                            {'count': 100, 'city': city, 'sex': sex, 'age_from': age - 1, 'age_to': age + 1}))[
+                'items']
         exist_pair_list = self.db.get_pairs_list(id)
         for user in users:
             if user['id'] in exist_pair_list:
@@ -59,12 +60,19 @@ class App:
 
     def get_user(self, user_id):
         user = (self.vk.method('users.get', {'user_ids': user_id, 'fields': 'city, sex, bdate'}))[0]
-        user['age'] = (datetime.now() - datetime.strptime(user['bdate'], "%d.%m.%Y")).days // 365
+        if 'city' in user:
+            pass
+        else:
+            user['city'] = {'id': 'Null'}
+        if 'bdate' in user:
+            user['age'] = (datetime.now() - datetime.strptime(user['bdate'], "%d.%m.%Y")).days // 365
+        else:
+            user['age'] = 'Null'
         return user
 
     def db_add_user(self, user_id):
         user = self.get_user(user_id)
-        self.db.add_user(user_id, f"'{user['city']['id']}'", user['sex'], user['age'])
+        self.db.add_user(user_id, user['city']['id'], user['sex'], user['age'])
 
     def search_user(self, city=1, sex=1):  # Поиск пользователя по параметрам
         pairs = (self.vk.method('users.search', {'city': city, 'sex': sex}))['items']

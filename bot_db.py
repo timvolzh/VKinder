@@ -37,3 +37,10 @@ class BotDB:
         result = self.connection.execute(
             f"INSERT INTO pairs VALUES ({pair_id + 1}, {vk_user_id}, {vk_pair_id})")
         return pair_id
+
+
+###############################3
+
+# db = BotDB()
+# result = db.get_user(112233)
+# print(result)

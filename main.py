@@ -1,3 +1,4 @@
+import re
 import vk_api
 from vk_api.longpoll import VkLongPoll, VkEventType
 import bot_data
@@ -43,8 +44,6 @@ class VkBot:
         attachment = ''
         for photo in photos:
             attachment += f'photo{id}_{photo},'
-        print(photos)
-        print(attachment)
         return attachment
 
 
