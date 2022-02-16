@@ -10,11 +10,11 @@ class BotDB:
 
     def search_user(self, id):
         result = self.connection.execute(
-            f"SELECT vk_id FROM vk_user WHERE vk_id = {id}").fetchmany(10)
+            f"SELECT * FROM vk_user WHERE vk_id = {id}").fetchmany(10)
         return result
 
     def add_user(self, id, city, sex, age):
-        values = f'({id}, {city}, {sex}, {age})'
+        values = f"({id}, {city}, {sex}, {age})"
         request = f'INSERT INTO vk_user VALUES {values}'
         self.connection.execute(request)
         return 'user added'
@@ -38,9 +38,15 @@ class BotDB:
             f"INSERT INTO pairs VALUES ({pair_id + 1}, {vk_user_id}, {vk_pair_id})")
         return pair_id
 
-
-###############################3
-
-# db = BotDB()
-# result = db.get_user(112233)
-# print(result)
+    def update_user(self, user_id, city=None, sex=None, age=None):
+        new_values = ''
+        if city:
+            new_values += f'vk_city={city},'
+        if sex == 'м' :
+            new_values += f'vk_sex=2,'
+        elif sex == 'ж':
+            new_values += f'vk_sex=1,'
+        if age:
+            new_values += f'vk_age={age},'
+        new_values = new_values[:-1]
+        requests = self.connection.execute(f'UPDATE vk_user SET {new_values} WHERE vk_id={user_id}')
