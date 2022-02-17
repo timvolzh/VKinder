@@ -1,3 +1,4 @@
+import json
 import re
 import vk_api
 from vk_api.longpoll import VkLongPoll, VkEventType
@@ -14,7 +15,15 @@ vk.get_api()
 db = BotDB()
 app = App()
 
-#
+
+
+
+
+# Формируем клавиатуру
+keyboard = '{"buttons":[[{"action":{"type":"text","label":"Найти пару","payload":""},"color":"positive"}],[{"action":{"type":"text","label":"Список команд","payload":""},"color":"secondary"}]]}'
+
+
+
 
 
 class VkBot:
@@ -30,7 +39,7 @@ class VkBot:
                 message = event.text.lower()  # Для того чтобы бот читал все с маленьких букв
                 user_id = event.user_id  # Получаем id пользователя
 
-                self.send_msg(user_id, )
+                Vk_bot.method('messages.send', {'user_id': user_id,'message': 'Привет', 'keyboard': keyboard, 'random_id': 0})
 
                 if message == 'начать':  # Найти пару
                     user_exist = db.search_user(user_id)  # проверяем есть ли пользователь в БД
