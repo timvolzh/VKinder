@@ -17,10 +17,16 @@ class App:
             sex = 2
         elif sex == 2:
             sex = 1
-        users = \
-            (self.vk.method('users.search',
-                            {'count': 100, 'city': city, 'sex': sex, 'age_from': age - 1, 'age_to': age + 1}))[
-                'items']
+        if age == None:
+            users = \
+                (self.vk.method('users.search',
+                                {'count': 100, 'city': city, 'sex': sex}))[
+                    'items']
+        else:
+            users = \
+                (self.vk.method('users.search',
+                                {'count': 100, 'city': city, 'sex': sex, 'age_from': age - 1, 'age_to': age + 1}))[
+                    'items']
         exist_pair_list = self.db.get_pairs_list(id)
         for user in users:
             if user['id'] in exist_pair_list:
@@ -65,7 +71,10 @@ class App:
         else:
             user['city'] = {'id': 'Null'}
         if 'bdate' in user:
-            user['age'] = (datetime.now() - datetime.strptime(user['bdate'], "%d.%m.%Y")).days // 365
+            try:
+                user['age'] = (datetime.now() - datetime.strptime(user['bdate'], "%d.%m.%Y")).days // 365
+            except:
+                user['age'] = 'Null'
         else:
             user['age'] = 'Null'
         return user

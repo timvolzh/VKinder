@@ -1,72 +1,68 @@
-import json
 import re
 import vk_api
 from vk_api.longpoll import VkLongPoll, VkEventType
-from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 import bot_data
 from bot_db import BotDB
 from vk_app import App
 
-# Подключаем базу данных, приложение и модуль vk
-Vk_bot = vk_api.VkApi(token=bot_data.bot_token)
-give = Vk_bot.get_api()
-vk = vk_api.VkApi(token=bot_data.app_token)
-vk.get_api()
-db = BotDB()
-app = App()
-
-
-
-
-
-# Формируем клавиатуру
-keyboard = '{"buttons":[[{"action":{"type":"text","label":"Найти пару","payload":""},"color":"positive"}],[{"action":{"type":"text","label":"Список команд","payload":""},"color":"secondary"}]]}'
-
-
-
-
 
 class VkBot:
+
+    def __init__(self):
+        self.keyboard = '{"buttons":[[{"action":{"type":"text","label":"Найти пару","payload":""},"color":"positive"}],[{"action":{"type":"text","label":"Список команд","payload":""},"color":"secondary"}]]} '
+        self.Vk_bot = vk_api.VkApi(token=bot_data.bot_token)
+        give = self.Vk_bot.get_api()
+        self.vk = vk_api.VkApi(token=bot_data.app_token)
+        self.vk.get_api()
+        self.db = BotDB()
+        self.app = App()
+
     # Функция для ответа на сообщения в лс группы
-    def send_msg(self, id, text=None, attachment=None):
-        Vk_bot.method('messages.send', {'user_id': id, 'message': text, 'attachment': attachment, 'random_id': 0})
+    def send_msg(self, id, text=None, keyboard=None, attachment=None):
+        self.Vk_bot.method('messages.send', {'user_id': id, 'message': text, 'attachment': attachment, 'random_id': 0})
 
     # Слушаем longpoll(Сообщения)
     def listen(self):
-        longpoll = VkLongPoll(Vk_bot)
+        longpoll = VkLongPoll(self.Vk_bot)
         for event in longpoll.listen():
             if event.type == VkEventType.MESSAGE_NEW and event.to_me:  # Чтобы наш бот не слышал и не отвечал на самого себя
                 message = event.text.lower()  # Для того чтобы бот читал все с маленьких букв
                 user_id = event.user_id  # Получаем id пользователя
 
-                Vk_bot.method('messages.send', {'user_id': user_id,'message': 'Привет', 'keyboard': keyboard, 'random_id': 0})
-
-                if message == 'начать':  # Найти пару
-                    user_exist = db.search_user(user_id)  # проверяем есть ли пользователь в БД
+                if message == 'начать':  # Проверяем есть ли пользователь в БД  и Найти пару
+                    user_exist = self.db.search_user(user_id)  #
                     if user_exist:
                         pass
                     else:
-                        app.db_add_user(user_id)
-                    user = db.get_user(user_id)
-                    pair = app.get_pair(user_id, user['city'], user['sex'], user['age'])
+                        self.app.db_add_user(user_id)
+                    user = self.db.get_user(user_id)
+                    pair = self.app.get_pair(user_id, user['city'], user['sex'], user['age'])
                     attachment = self.photo_attachment(pair["id"], pair["photos"])
-                    self.send_msg(user_id, f'{pair["first_name"]} {pair["last_name"]}\nvk.com/id{pair["id"]}',
-                                  attachment)
+                    self.send_msg(id=user_id, text=f'{pair["first_name"]} {pair["last_name"]}\nvk.com/id{pair["id"]}',
+                                  keyboard=self.keyboard, attachment=attachment)
 
-                if message == 'и':  # показать параметры поиска
-                    db_user = db.search_user(user_id)[0]
+                if message == 'найти пару':
+                    user = self.db.get_user(user_id)
+                    pair = self.app.get_pair(user_id, user['city'], user['sex'], user['age'])
+                    attachment = self.photo_attachment(pair["id"], pair["photos"])
+                    self.send_msg(id=user_id, text=f'{pair["first_name"]} {pair["last_name"]}\nvk.com/id{pair["id"]}',
+                                  keyboard=self.keyboard, attachment=attachment)
+
+                if message == 'параметры':  # показать параметры поиска
+                    db_user = self.db.search_user(user_id)[0]
                     user = {'city': db_user[1], 'sex': db_user[2], 'age': db_user[3]}
                     print(user)
                     if user['city'] == None: user['city'] = 'не указан'
                     if user['sex'] == 0: user['sex'] = 'не указан'
                     if user['age'] == None: user['age'] = 'не указан'
-                    self.send_msg(user_id, f'Город - {user["city"]}\nВозраст - {user["age"]}\nВаш пол - {user["sex"]}')
+                    self.send_msg(user_id,
+                                  text=f'Город - {user["city"]}\nВозраст - {user["age"]}\nВаш пол - {user["sex"]}')
 
-                if message.startswith('с'):
+                if message.startswith('изменить'):
                     try:
                         city_name = re.sub(r'([гГ]ород)+(:*)( *)(\w*)', r'\4',
                                            re.search(r'([гГ]ород)+(:*)( *)(\w*)', message).group(0))
-                        city = (vk.method('database.getCities', {'country_id': 1, 'q': city_name}))['items'][0]['id']
+                        city = (self.vk.method('database.getCities', {'country_id': 1, 'q': city_name}))['items'][0]['id']
                     except:
                         city = None
                     try:
@@ -79,7 +75,17 @@ class VkBot:
                                      re.search(r'([вВ]озраст)+(:*)( *)(\w*)', message).group(0))
                     except:
                         age = None
-                    db.update_user(user_id, city, sex, age)
+                    self.db.update_user(user_id, city, sex, age)
+
+                if message == 'список команд':
+                    text = 'Команды:\n' \
+                           'Начать - начать пользоваться ботом\n' \
+                           'Найти пару - найти пару)))\n' \
+                           'Параметры - показать текущие параметры поиска\n ' \
+                           'Изменить - изменить город/пол/возраст а указанный\n' \
+                           '(Например: изменить город: Саратов)'
+                    self.send_msg(id=user_id, text=text,
+                                  keyboard=self.keyboard, attachment=None)
 
     # Формирование вложений фото
     def photo_attachment(self, id, photos):
