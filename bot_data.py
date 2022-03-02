@@ -1,3 +1,3 @@
-bot_token = '0a43e2c28bf6fa9696aff1aa127ee56e61381e913ff626a52239a21dfb9844c002845534ce781c4cfa5b4'
-app_token = '4f16cb9f36c9a42cad2cb66a3a8e0582f0f0500cc1e96997d170e6175d592d6ffeabb7323462303fc2c13'
+bot_token = ''
+app_token = ''
 db = 'postgresql://postgres:1111@localhost:5432/postgres'
