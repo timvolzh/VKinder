@@ -34,8 +34,12 @@ class BotDB:
 
     def add_pair(self, vk_user_id, vk_pair_id):
         pair_id = (self.connection.execute("SELECT max(id) FROM pairs").fetchmany(1000))[0][0]
-        result = self.connection.execute(
-            f"INSERT INTO pairs VALUES ({pair_id + 1}, {vk_user_id}, {vk_pair_id})")
+        if pair_id:
+            result = self.connection.execute(
+                f"INSERT INTO pairs VALUES ({pair_id + 1}, {vk_user_id}, {vk_pair_id})")
+        else:
+            result = self.connection.execute(
+                f"INSERT INTO pairs VALUES (1, {vk_user_id}, {vk_pair_id})")
         return pair_id
 
     def update_user(self, user_id, city=None, sex=None, age=None):
